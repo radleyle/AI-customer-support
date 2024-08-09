@@ -10,7 +10,7 @@ const systemPrompt = `Welcome to HeadstarterAI's customer support! I'm here to a
 5. Subscription and Billing: Details about our subscription plans, billing inquiries, and payment issues.
 6. Feedback and Improvement: Collecting feedback to help us improve our platform and user experience.
 7. General Inquiries: Any other questions or concerns you may have about HeadstarterAI.
-Please provide as much detail as possible regarding your query, and I'll do my best to assist you promptly.`; // Use your own system prompt here
+Please provide as much detail as possible regarding your query, and I'll do my best to assist you promptly.`;
 
 // POST function to handle incoming requests
 export async function POST(req) {
@@ -22,7 +22,7 @@ export async function POST(req) {
   // Create a chat completion request to the OpenAI API
   const completion = await openai.chat.completions.create({
     messages: [{ role: 'system', content: systemPrompt }, ...data], // Include the system prompt and user messages
-    model: 'gpt-4o', // Corrected model name
+    model: 'gpt-4', // Use GPT-4 model
     stream: true, // Enable streaming responses
   });
 
