@@ -1,18 +1,32 @@
-'use client';
+'use client'
 
-import { Box, Button, Stack, TextField, useTheme } from '@mui/material';
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { Box, Button, Stack, TextField } from '@mui/material';
+import debounce from 'lodash/debounce';
 
 export default function Home() {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: "Hi! I'm the Headstarter support assistant. How can I help you today?",
+      content: "Hi! I'm the Headstarter AI's support assistant. How can I help you today?",
     },
   ]);
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const theme = useTheme(); // Accessing theme for consistent styling
+
+  const messagesEndRef = useRef(null);
+
+  // Debounced scroll to bottom
+  const scrollToBottom = useCallback(
+    debounce(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 100),
+    []
+  );
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
 
   const sendMessage = async () => {
     if (!message.trim() || isLoading) return;
@@ -58,7 +72,10 @@ export default function Home() {
       console.error('Error:', error);
       setMessages((messages) => [
         ...messages,
-        { role: 'assistant', content: "I'm sorry, but I encountered an error. Please try again later." },
+        {
+          role: 'assistant',
+          content: "I'm sorry, but I encountered an error. Please try again later.",
+        },
       ]);
     }
 
@@ -72,79 +89,67 @@ export default function Home() {
     }
   };
 
-  const messagesEndRef = useRef(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
   return (
     <Box
       width="100vw"
       height="100vh"
       display="flex"
       flexDirection="column"
-      justifyContent="space-between"
+      justifyContent="center"
       alignItems="center"
-      bgcolor={theme.palette.background.default} // Background color from the theme
-      px={2} // Adding padding for better spacing
     >
       <Stack
         direction={'column'}
-        width="100%"
-        maxWidth="900px" // Limit the width for readability
-        flexGrow={1}
-        overflow="auto"
+        width="500px"
+        height="700px"
+        border="1px solid black"
+        p={2}
         spacing={3}
-        pt={2} // Padding from the top
       >
-        {messages.map((message, index) => (
-          <Box
-            key={index}
-            display="flex"
-            justifyContent={
-              message.role === 'assistant' ? 'flex-start' : 'flex-end'
-            }
-          >
-            <Box
-              bgcolor={
-                message.role === 'assistant'
-                  ? theme.palette.primary.main
-                  : theme.palette.secondary.main
-              }
-              color="white"
-              borderRadius={16}
-              p={2}
-              maxWidth="75%" // Limit the width of the message bubbles
-              boxShadow={3} // Add some shadow for depth
-            >
-              {message.content}
-            </Box>
-          </Box>
-        ))}
-        <div ref={messagesEndRef} />
-      </Stack>
-      <Stack direction={'row'} spacing={2} width="100%" maxWidth="900px" pb={2}>
-        <TextField
-          label="Message"
-          fullWidth
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
-          disabled={isLoading}
-          variant="outlined"
-        />
-        <Button
-          variant="contained"
-          onClick={sendMessage}
-          disabled={isLoading}
+        <Stack
+          direction={'column'}
+          spacing={2}
+          flexGrow={1}
+          overflow="auto"
+          maxHeight="100%"
         >
-          Send
-        </Button>
+          {messages.map((message, index) => (
+            <Box
+              key={index}
+              display="flex"
+              justifyContent={
+                message.role === 'assistant' ? 'flex-start' : 'flex-end'
+              }
+            >
+              <Box
+                bgcolor={
+                  message.role === 'assistant'
+                    ? 'primary.main'
+                    : 'secondary.main'
+                }
+                color="white"
+                borderRadius={16}
+                p={3}
+              >
+                {message.content}
+              </Box>
+            </Box>
+          ))}
+          <div ref={messagesEndRef} />
+        </Stack>
+        <Stack direction={'row'} spacing={2}>
+          <TextField
+            label="Message"
+            fullWidth
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            disabled={isLoading}
+          />
+          <Button variant="contained" onClick={sendMessage} disabled={isLoading}>
+            Send
+          </Button>
+        </Stack>
       </Stack>
     </Box>
   );
